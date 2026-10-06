@@ -1,0 +1,307 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Monthly Routine Calendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg-1: #f5f7fb;
+    --bg-2: #eef2ff;
+    --card: #ffffff;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #e2e8f0;
+  }
+  * { -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #dbeafe 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #f5d0fe 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .glass {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 20px 60px -20px rgba(15,23,42,0.18), 0 2px 6px rgba(15,23,42,0.04);
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0,1fr));
+  }
+  .dow {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    text-align: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .day {
+    position: relative;
+    min-height: 112px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-top: none;
+    border-left: none;
+    background: rgba(255,255,255,0.55);
+    transition: background .2s ease, transform .2s ease;
+    overflow: hidden;
+  }
+  .day:nth-child(7n+1) { border-left: 1px solid var(--line); }
+  .day:hover { background: rgba(255,255,255,0.95); }
+  .day.out {
+    background: repeating-linear-gradient(45deg, rgba(148,163,184,0.05), rgba(148,163,184,0.05) 6px, rgba(148,163,184,0.02) 6px, rgba(148,163,184,0.02) 12px);
+    color: #94a3b8;
+  }
+  .day.weekend:not(.out) { background: rgba(250, 245, 255, 0.55); }
+  .day.today {
+    background: linear-gradient(135deg, #eef2ff 0%, #fce7f3 100%);
+    box-shadow: inset 0 0 0 2px #6366f1;
+  }
+  .day .num {
+    font-weight: 700;
+    font-size: 14px;
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 8px;
+  }
+  .day.today .num {
+    background: #6366f1;
+    color: #fff;
+    box-shadow: 0 4px 10px -2px rgba(99,102,241,0.5);
+  }
+  .day.out .num { color: #cbd5e1; font-weight: 500; }
+  .pills {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 999px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .pill svg { width: 9px; height: 9px; }
+  .pill.work   { background: #dbeafe; color: #1d4ed8; }
+  .pill.cook   { background: #ffedd5; color: #c2410c; }
+  .pill.gym    { background: #dcfce7; color: #15803d; }
+  .pill.chores { background: #f3e8ff; color: #7e22ce; }
+  .pill.call   { background: #fce7f3; color: #be185d; }
+  .pill.tv     { background: #e0e7ff; color: #3730a3; }
+
+  .legend .sw {
+    width: 12px; height: 12px; border-radius: 4px;
+    display: inline-block;
+    box-shadow: inset 0 0 0 1px rgba(15,23,42,0.05);
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 10px;
+    background: #fff; border: 1px solid var(--line);
+    font-weight: 600; font-size: 13px; color: #334155;
+    transition: all .15s ease;
+  }
+  .btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+  .btn.primary { background: #6366f1; color: #fff; border-color: #6366f1; }
+  .btn.primary:hover { background: #4f46e5; }
+
+  @media (max-width: 720px) {
+    .day { min-height: 84px; padding: 6px; }
+    .pill { font-size: 0; padding: 3px; gap: 0; }
+    .pill svg { width: 10px; height: 10px; }
+    .day .num { width: 22px; height: 22px; font-size: 12px; }
+  }
+  .fade-in { animation: fade .35s ease both; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+    <div>
+      <div class="text-xs font-semibold tracking-widest text-indigo-600 uppercase">My Routine</div>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Monthly Calendar</h1>
+      <p class="text-sm text-slate-500 mt-1">Work, meals, training, chores, calls &amp; downtime — all in one view.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="prevBtn" class="btn" aria-label="Previous month">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Prev
+      </button>
+      <button id="todayBtn" class="btn primary">Today</button>
+      <button id="nextBtn" class="btn" aria-label="Next month">
+        Next
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Calendar card -->
+  <div class="glass rounded-2xl p-3 md:p-5">
+    <div class="flex items-center justify-between mb-4 px-1">
+      <h2 id="monthLabel" class="text-xl md:text-2xl font-bold"></h2>
+      <div class="hidden md:flex items-center gap-4 text-xs text-slate-500">
+        <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span>Today highlighted</span>
+        <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-fuchsia-400"></span>Weekends tinted</span>
+      </div>
+    </div>
+
+    <div id="calendar" class="cal-grid rounded-xl overflow-hidden border border-slate-200"></div>
+
+    <!-- Legend -->
+    <div class="mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+      <div class="flex items-center gap-2 text-xs text-slate-600"><span class="sw" style="background:#dbeafe"></span><span class="font-semibold text-slate-800">Work 9–5</span> · Mon–Fri</div>
+      <div class="flex items-center gap-2 text-xs text-slate-600"><span class="sw" style="background:#ffedd5"></span><span class="font-semibold text-slate-800">Cooking</span> · Daily</div>
+      <div class="flex items-center gap-2 text-xs text-slate-600"><span class="sw" style="background:#dcfce7"></span><span class="font-semibold text-slate-800">Gym</span> · Mon, Wed, Fri</div>
+      <div class="flex items-center gap-2 text-xs text-slate-600"><span class="sw" style="background:#f3e8ff"></span><span class="font-semibold text-slate-800">Chores</span> · Sat</div>
+      <div class="flex items-center gap-2 text-xs text-slate-600"><span class="sw" style="background:#fce7f3"></span><span class="font-semibold text-slate-800">Phone Home</span> · Evening</div>
+      <div class="flex items-center gap-2 text-xs text-slate-600"><span class="sw" style="background:#e0e7ff"></span><span class="font-semibold text-slate-800">TV</span> · Night</div>
+    </div>
+  </div>
+
+  <p class="text-center text-xs text-slate-400 mt-6">Click <span class="font-semibold">Today</span> to jump back to the current month.</p>
+</div>
+
+<script>
+  // SVG icons (minimal, inline)
+  const ICONS = {
+    work: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    cook: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M6 10h12l-1 10H7z"/></svg>',
+    gym:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6v12"/><path d="M18 6v12"/><path d="M2 10v4"/><path d="M22 10v4"/><path d="M6 12h12"/></svg>',
+    chores:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22l6-6"/><path d="M14 4l6 6-10 10H4v-6z"/></svg>',
+    call: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92V21a1 1 0 0 1-1.11 1A19 19 0 0 1 2 3.11 1 1 0 0 1 3 2h4.09a1 1 0 0 1 1 .75l1 4a1 1 0 0 1-.29 1L7 9.5a16 16 0 0 0 7.5 7.5l1.75-1.79a1 1 0 0 1 1-.29l4 1a1 1 0 0 1 .75 1z"/></svg>',
+    tv:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M8 21h8"/></svg>'
+  };
+
+  // Recurring rules (dow: 0=Sun ... 6=Sat)
+  function getActivities(date) {
+    const dow = date.getDay(); // 0 Sun .. 6 Sat
+    const acts = [];
+    // Work 9-5, Mon-Fri
+    if (dow >= 1 && dow <= 5) acts.push({ key:'work', label:'Work 9–5', cls:'work' });
+    // Cooking daily
+    acts.push({ key:'cook', label:'Cook', cls:'cook' });
+    // Gym Mon, Wed, Fri
+    if (dow === 1 || dow === 3 || dow === 5) acts.push({ key:'gym', label:'Gym', cls:'gym' });
+    // Chores on Saturday
+    if (dow === 6) acts.push({ key:'chores', label:'Chores', cls:'chores' });
+    // Call home in the evening (every day)
+    acts.push({ key:'call', label:'Call home', cls:'call' });
+    // TV at night (every day)
+    acts.push({ key:'tv', label:'TV', cls:'tv' });
+    return acts;
+  }
+
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  let view = new Date();
+  view.setDate(1);
+
+  function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+  function render() {
+    const cal = document.getElementById('calendar');
+    const label = document.getElementById('monthLabel');
+    label.textContent = `${MONTHS[view.getMonth()]} ${view.getFullYear()}`;
+
+    cal.innerHTML = '';
+    cal.classList.remove('fade-in'); void cal.offsetWidth; cal.classList.add('fade-in');
+
+    // Day-of-week headers
+    DOW.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'dow';
+      el.textContent = d;
+      cal.appendChild(el);
+    });
+
+    const first = new Date(view.getFullYear(), view.getMonth(), 1);
+    const startOffset = first.getDay(); // 0..6
+    const daysInMonth = new Date(view.getFullYear(), view.getMonth()+1, 0).getDate();
+    const prevMonthDays = new Date(view.getFullYear(), view.getMonth(), 0).getDate();
+
+    const today = new Date();
+    const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+
+    for (let i = 0; i < totalCells; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'day';
+      let dateObj;
+      let isOut = false;
+
+      if (i < startOffset) {
+        const d = prevMonthDays - (startOffset - 1 - i);
+        dateObj = new Date(view.getFullYear(), view.getMonth()-1, d);
+        isOut = true;
+      } else if (i >= startOffset + daysInMonth) {
+        const d = i - (startOffset + daysInMonth - 1);
+        dateObj = new Date(view.getFullYear(), view.getMonth()+1, d);
+        isOut = true;
+      } else {
+        const d = i - startOffset + 1;
+        dateObj = new Date(view.getFullYear(), view.getMonth(), d);
+      }
+
+      const dow = dateObj.getDay();
+      if (dow === 0 || dow === 6) cell.classList.add('weekend');
+      if (isOut) cell.classList.add('out');
+      if (!isOut && sameDay(dateObj, today)) cell.classList.add('today');
+
+      // Number
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = dateObj.getDate();
+      cell.appendChild(num);
+
+      // Activity pills
+      const pills = document.createElement('div');
+      pills.className = 'pills';
+      const acts = getActivities(dateObj);
+      acts.forEach(a => {
+        const p = document.createElement('span');
+        p.className = `pill ${a.cls}`;
+        p.title = a.label;
+        p.innerHTML = `${ICONS[a.key]}<span>${a.label}</span>`;
+        pills.appendChild(p);
+      });
+      cell.appendChild(pills);
+
+      cal.appendChild(cell);
+    }
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    view.setMonth(view.getMonth() - 1); render();
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    view.setMonth(view.getMonth() + 1); render();
+  });
+  document.getElementById('todayBtn').addEventListener('click', () => {
+    view = new Date(); view.setDate(1); render();
+  });
+
+  render();
+</script>
+</body>
+</html>
